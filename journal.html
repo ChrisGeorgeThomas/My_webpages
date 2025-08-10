@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Digital Journal</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+    }
+
+    /* Navbar */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #1e293b;
+        padding: 10px 20px;
+    }
+    .navbar h1 {
+        color: white;
+        margin: 0;
+    }
+    .navbar .buttons {
+        display: flex;
+        gap: 10px;
+    }
+    .navbar button, .navbar select {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .green-btn { background-color: #22c55e; color: white; }
+    .blue-btn { background-color: #3b82f6; color: white; }
+    .dropdown { background-color: white; }
+
+    /* Entry Cards */
+    .entries {
+        max-width: 800px;
+        margin: 20px auto;
+    }
+    .entry {
+        background-color: #fffaf0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-left: 6px solid;
+    }
+    .entry h3 {
+        margin: 0;
+        font-weight: bold;
+    }
+    .entry p {
+        margin: 5px 0 0;
+    }
+
+    /* Mood colors */
+    .happy { border-color: #22c55e; }
+    .neutral { border-color: #f59e0b; }
+    .sad { border-color: #3b82f6; }
+
+    /* New Entry Form */
+    .entry-form {
+        max-width: 800px;
+        margin: 20px auto;
+        display: none;
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    textarea, input, select {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+        font-size: 14px;
+    }
+    .save-btn {
+        background-color: #2563eb;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+    }
+
+    /* Dark mode */
+    body.dark {
+        background-color: #0f172a;
+        color: white;
+    }
+    body.dark .entry-form,
+    body.dark .entry {
+        background-color: #1e293b;
+        color: white;
+    }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <h1>My Digital Journal</h1>
+    <div class="buttons">
+        <select id="moodFilter" class="dropdown" onchange="filterEntries()">
+            <option value="all">All Moods</option>
+            <option value="happy">😊 Happy</option>
+            <option value="neutral">😐 Neutral</option>
+            <option value="sad">😢 Sad</option>
+        </select>
+        <button class="blue-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        <button class="green-btn" onclick="toggleEntryForm()">Write a New Entry</button>
+    </div>
+</div>
+
+<div id="entryForm" class="entry-form">
+    <input type="text" id="entryTitle" placeholder="Title">
+    <textarea id="entryText" placeholder="Write your thoughts..."></textarea>
+    <select id="entryMood">
+        <option value="happy">😊 Happy</option>
+        <option value="neutral">😐 Neutral</option>
+        <option value="sad">😢 Sad</option>
+    </select>
+    <button class="save-btn" onclick="saveEntry()">Save Entry</button>
+</div>
+
+<div class="entries" id="entriesList"></div>
+
+<script>
+    function toggleEntryForm() {
+        const form = document.getElementById("entryForm");
+        form.style.display = form.style.display === "none" || form.style.display === "" ? "block" : "none";
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+    }
+
+    function saveEntry() {
+        const title = document.getElementById("entryTitle").value.trim();
+        const text = document.getElementById("entryText").value.trim();
+        const mood = document.getElementById("entryMood").value;
+
+        if (!title || !text) {
+            alert("Please fill in both title and text.");
+            return;
+        }
+
+        const entries = JSON.parse(localStorage.getItem("journalEntries")) || [];
+        entries.unshift({ title, text, mood });
+        localStorage.setItem("journalEntries", JSON.stringify(entries));
+
+        document.getElementById("entryTitle").value = "";
+        document.getElementById("entryText").value = "";
+        document.getElementById("entryMood").value = "happy";
+
+        toggleEntryForm();
+        displayEntries();
+    }
+
+    function displayEntries(filterMood = "all") {
+        const entries = JSON.parse(localStorage.getItem("journalEntries")) || [];
+        const list = document.getElementById("entriesList");
+        list.innerHTML = "";
+
+        entries
+            .filter(entry => filterMood === "all" || entry.mood === filterMood)
+            .forEach(entry => {
+                const div = document.createElement("div");
+                div.className = `entry ${entry.mood}`;
+                const emoji = entry.mood === "happy" ? "😊" : entry.mood === "neutral" ? "😐" : "😢";
+                div.innerHTML = `<h3>${entry.title}</h3><p>${entry.text}</p><p>${emoji}</p>`;
+                list.appendChild(div);
+            });
+    }
+
+    function filterEntries() {
+        const mood = document.getElementById("moodFilter").value;
+        displayEntries(mood);
+    }
+
+    // Load entries on page load
+    window.onload = () => displayEntries();
+</script>
+
+</body>
+</html>
