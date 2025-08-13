@@ -1,191 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>My Digital Journal</title>
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f8fafc;
-        color: #0f172a;
-    }
+  :root{
+    /* Default colors are set here, but can be overridden by JS */
+    --bg-dark: #0f172a;
+    --header-dark: #1e293b;
+    --entry-dark: #172033;
+    --sidebar-dark: #0b1320;
 
-    /* Navbar */
-    .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #1e293b;
-        padding: 10px 20px;
-    }
-    .navbar h1 {
-        color: white;
-        margin: 0;
-    }
-    .navbar .buttons {
-        display: flex;
-        gap: 10px;
-    }
-    .navbar button, .navbar select {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 5px;
-        font-size: 14px;
-        cursor: pointer;
-    }
-    .green-btn { background-color: #22c55e; color: white; }
-    .blue-btn { background-color: #3b82f6; color: white; }
-    .dropdown { background-color: white; }
+    --light-bg: #B9D1EA;
+    --light-header: #96B5CE;
+    --light-entry: #ffffff;
+    --light-sidebar: #eef2f9;
+    
+    --accent-green: #22c55e;
+    --btn-blue: #3b82f6;
+    --calendar-dot-dark: #7FA9D6;
+    --calendar-dot-light: #B9D1EA;
+  }
 
-    /* Entry Cards */
-    .entries {
-        max-width: 800px;
-        margin: 20px auto;
-    }
-    .entry {
-        background-color: #fffaf0;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        border-left: 6px solid;
-    }
-    .entry h3 {
-        margin: 0;
-        font-weight: bold;
-    }
-    .entry p {
-        margin: 5px 0 0;
-    }
+  html,body{height:100%; margin:0; font-family: "Segoe UI", Roboto, Arial, sans-serif; overflow-x: hidden;}
 
-    /* Mood colors */
-    .happy { border-color: #22c55e; }
-    .neutral { border-color: #f59e0b; }
-    .sad { border-color: #3b82f6; }
+  body{
+    background: var(--bg-dark);
+    color: #ffffff;
+  }
+  
+  /* --- Sidebar Styles --- */
+  .sidebar {
+    height: 100%;
+    width: 240px;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    background-color: var(--sidebar-dark);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+  }
+  .sidebar-main-content {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+    overflow-y: auto;
+    width: 100%;
+  }
+  .sidebar-profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-green);
+  }
+  .sidebar-username {
+    color: #ffffff;
+    margin: 12px 15px 0 15px;
+    font-weight: 600;
+    font-size: 18px;
+    text-align: center;
+    word-break: break-all;
+  }
+  .sidebar-controls {
+    width: 85%;
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sidebar-controls button {
+    width: 100%;
+    padding: 10px;
+    background: var(--entry-dark);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  /* Theme Customizer in Sidebar */
+  .theme-customizer {
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+  }
+  .theme-customizer h4 { margin: 0 0 10px 0; color: #fff; text-align: center; }
+  .theme-customizer .theme-section { margin-bottom: 10px; }
+  .theme-customizer h5 { margin: 0 0 8px 0; color: #a0aec0; }
+  /* This rule is changed to move the color picker to the left */
+  .theme-customizer label {
+    display: flex;
+    justify-content: flex-start; /* Changed from space-between */
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #cbd5e0;
+    gap: 15px; /* Added spacing */
+  }
+  .theme-customizer span.label-text { flex-grow: 1; } /* Allow text to take space */
+  .theme-customizer input[type="color"] { width: 24px; height: 24px; border: 1px solid #4a5568; padding: 2px; border-radius: 4px; background: transparent; cursor: pointer; }
+  .theme-customizer #resetThemeBtn { width: 100%; margin-top: 10px; }
 
-    /* New Entry Form */
-    .entry-form {
-        max-width: 800px;
-        margin: 20px auto;
-        display: none;
-        background-color: white;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    textarea, input, select {
-        width: 100%;
-        margin-bottom: 10px;
-        padding: 8px;
-        font-size: 14px;
-    }
-    .save-btn {
-        background-color: #2563eb;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-    }
+  .main-wrapper { transition: filter 0.3s ease-in-out; }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  body.sidebar-open .main-wrapper { filter: brightness(0.6); }
+  
+  /* Header & Page Layout */
+  .header{ background: var(--header-dark); padding: 18px 26px; display:flex; align-items:center; justify-content:space-between; box-shadow: inset 0 -1px rgba(255,255,255,0.02); }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .menu-toggle-btn { background: none; border: none; color: white; font-size: 28px; cursor: pointer; padding: 0 10px; }
+  .brand { font-size:32px; font-weight:700; }
+  .controls { display:flex; gap:12px; align-items:center; }
+  .controls select,
+  .controls button { padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background: transparent; color: white; cursor:pointer; font-weight:600; }
+  .controls select { background: white; color: black; border-radius:8px; padding:8px 14px; }
+  .toggle-btn { background: var(--btn-blue); color:white; }
+  .write-btn { background: var(--accent-green); color:white; }
 
-    /* Dark mode */
-    body.dark {
-        background-color: #0f172a;
-        color: white;
-    }
-    body.dark .entry-form,
-    body.dark .entry {
-        background-color: #1e293b;
-        color: white;
-    }
+  .page { padding: 28px 60px; min-height: calc(100vh - 82px); }
+  .entries { max-width: 900px; margin: 0 auto; display:flex; flex-direction:column; gap:18px; }
+  .entry { background: var(--entry-dark); padding: 18px 20px; border-radius: 12px; border-left: 6px solid var(--accent-green); max-width: 900px; box-shadow: 0 2px 0 rgba(255,255,255,0.01) inset; cursor: pointer; }
+  .entry h4 { margin:0 0 6px 0; }
+  .entry p { margin:0 0 8px 0; color:#d6d6d6; line-height: 1.6; word-break: break-word; }
+  .entry .meta { font-size:13px; color:#9aa0a6; }
+  .entry > img { max-width: 100%; border-radius: 8px; margin-top: 4px; margin-bottom: 12px; display: block; }
+
+  .modal-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:12000; align-items:center; justify-content:center; }
+  .modal { width:450px; background:white; padding:18px; border-radius:10px; color:#111; }
+  .modal input[type="text"], .modal input[type="password"], .modal select { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:1px solid #ccc; font-size:14px; box-sizing: border-box; }
+  .modal .row { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:10px; }
+  .modal button { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:600; }
+  .btn-save { background: var(--accent-green); color:white; }
+  .btn-cancel { background: #e5e7eb; color:#111; }
+
+  #editorToolbar { background: #f0f0f0; padding: 6px; border-radius: 6px 6px 0 0; border: 1px solid #ccc; border-bottom: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  #editorToolbar button, #editorToolbar select { background: #fff; border: 1px solid #ccc; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+  #editorToolbar button { min-width: 30px; font-weight: bold; }
+  #editorToolbar input[type="color"] { width: 30px; height: 26px; border: 1px solid #ccc; padding: 2px; border-radius: 4px; background: #fff; cursor: pointer; }
+  .editable-area { min-height: 120px; border: 1px solid #ccc; padding: 10px; font-size: 14px; border-radius: 0 0 6px 6px; margin-bottom: 8px; outline: none; overflow-y: auto; }
+  
+  .modal-toolbar { display: flex; gap: 8px; margin: 12px 0 4px 0; }
+  .modal-toolbar button { padding: 4px 8px; font-size: 16px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; }
+  .emoji-picker { display: none; position: absolute; bottom: 100%; left: 0; background: white; border: 1px solid #ccc; border-radius: 8px; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 13000; width: 280px; max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px; }
+  .emoji-picker span { cursor: pointer; font-size: 20px; padding: 4px; border-radius: 4px; text-align: center; flex-basis: 30px; flex-grow: 1; }
+  .emoji-picker span:hover { background: #eee; }
+
+  .calendar-box { position: fixed; right: 22px; bottom: 18px; width: 290px; background: var(--entry-dark); padding:10px; border-radius:12px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); z-index:10000; color: white; }
+  .cal-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .cal-grid { width:100%; border-collapse:collapse; table-layout:fixed; }
+  .cal-grid th { color: #9aa0a6; font-weight:600; font-size:12px; }
+  .cal-grid td { width:14.285%; text-align:center; padding:8px 6px; position:relative; cursor:pointer; border-radius:6px; }
+  .cal-grid td span.date-num { display:inline-block; min-width:26px; padding:4px 6px; border-radius:6px; }
+
+  body.light-mode { background: var(--light-bg); color: #0b1320; }
+  body.light-mode .sidebar { background: var(--light-sidebar); border-right: 1px solid #d1d5db; }
+  body.light-mode .sidebar-username { color: #1f2937; }
+  body.light-mode .sidebar-controls button { background: #fff; color: #111; border: 1px solid #d1d5db; }
+  body.light-mode .theme-customizer { border-top-color: #d1d5db;}
+  body.light-mode .theme-customizer h4 { color: #1f2937; }
+  body.light-mode .theme-customizer h5 { color: #4b5563; }
+  body.light-mode .theme-customizer label { color: #374151; }
+  body.light-mode .header { background: var(--light-header); color:white; }
+  body.light-mode .menu-toggle-btn { color: white; }
+  body.light-mode .controls select { color:black; }
+  body.light-mode .entry { background: var(--light-entry); color:#111; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  body.light-mode .calendar-box { background: var(--light-entry); color:#111; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
 </style>
 </head>
 <body>
 
-<div class="navbar">
-    <h1>My Digital Journal</h1>
-    <div class="buttons">
-        <select id="moodFilter" class="dropdown" onchange="filterEntries()">
-            <option value="all">All Moods</option>
-            <option value="happy">😊 Happy</option>
-            <option value="neutral">😐 Neutral</option>
-            <option value="sad">😢 Sad</option>
-        </select>
-        <button class="blue-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
-        <button class="green-btn" onclick="toggleEntryForm()">Write a New Entry</button>
+  <div class="sidebar">
+    <div class="sidebar-main-content">
+      <img src="" alt="Profile Picture" id="profilePic" class="sidebar-profile-pic">
+      <h3 id="usernameDisplay" class="sidebar-username"></h3>
+      <div class="sidebar-controls">
+        <button id="changeUsernameBtn">Change Username</button>
+        <button id="changePicBtn">Change Picture</button>
+        <button id="changePassBtn">Change Password</button>
+      </div>
     </div>
-</div>
+    <div class="theme-customizer" id="themeCustomizer">
+        <h4>Theme Colors</h4>
+        <div class="theme-section">
+            <h5>Dark Mode</h5>
+            <label><span class="label-text">Background</span> <input type="color" data-theme="dark" data-var="bg-dark"></label>
+            <label><span class="label-text">Header</span> <input type="color" data-theme="dark" data-var="header-dark"></label>
+            <label><span class="label-text">Entry Box</span> <input type="color" data-theme="dark" data-var="entry-dark"></label>
+            <label><span class="label-text">Sidebar</span> <input type="color" data-theme="dark" data-var="sidebar-dark"></label>
+        </div>
+        <div class="theme-section">
+            <h5>Light Mode</h5>
+            <label><span class="label-text">Background</span> <input type="color" data-theme="light" data-var="light-bg"></label>
+            <label><span class="label-text">Header</span> <input type="color" data-theme="light" data-var="light-header"></label>
+            <label><span class="label-text">Entry Box</span> <input type="color" data-theme="light" data-var="light-entry"></label>
+            <label><span class="label-text">Sidebar</span> <input type="color" data-theme="light" data-var="light-sidebar"></label>
+        </div>
+        <button id="resetThemeBtn" class="sidebar-controls button">Reset Colors</button>
+    </div>
+  </div>
 
-<div id="entryForm" class="entry-form">
-    <input type="text" id="entryTitle" placeholder="Title">
-    <textarea id="entryText" placeholder="Write your thoughts..."></textarea>
-    <select id="entryMood">
-        <option value="happy">😊 Happy</option>
-        <option value="neutral">😐 Neutral</option>
-        <option value="sad">😢 Sad</option>
-    </select>
-    <button class="save-btn" onclick="saveEntry()">Save Entry</button>
-</div>
+  <div class="main-wrapper">
+    <div class="header">
+      <div class="header-left">
+        <button class="menu-toggle-btn" id="menuToggleBtn" title="Toggle Menu">&#9776;</button>
+        <div class="brand">My Digital Journal</div>
+      </div>
+      <div class="controls">
+        <select id="filterMood"><option value="all">All Moods</option><option value="😊">Happy</option><option value="😢">Sad</option><option value="🤩">Excited</option><option value=" productive">Productive</option><option value=" tired">Tired</option></select>
+        <button id="toggleTheme" class="toggle-btn">Toggle Theme</button>
+        <button id="openNew" class="write-btn">Write a New Entry</button>
+      </div>
+    </div>
+    <div class="page"><div id="entriesContainer" class="entries"></div></div>
+  </div>
 
-<div class="entries" id="entriesList"></div>
+  <div id="entryModalBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3 id="modalTitle">New Journal Entry</h3>
+      <input type="text" id="entryTitle" placeholder="Title (optional)" />
+      <input type="text" id="entryImageURL" placeholder="Paste image link here (optional)" />
+      <div id="editorToolbar"><button type="button" data-command="bold" title="Bold"><b>B</b></button><button type="button" data-command="italic" title="Italic"><i>I</i></button><select data-command="fontName" title="Font Style"><option value="Arial, sans-serif">Arial</option><option value="Verdana, sans-serif">Verdana</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Courier New, monospace">Courier New</option><option value="Trebuchet MS, sans-serif">Trebuchet MS</option></select><input type="color" data-command="foreColor" title="Font Color" value="#000000"></div>
+      <div id="entryBody" class="editable-area" contenteditable="true" spellcheck="false"></div>
+      <select id="entryMood"><option value="😊">😊 Happy</option><option value="😢">😢 Sad</option><option value="🤩">🤩 Excited</option><option value=" productive">Productive</option><option value=" tired">Tired</option></select>
+      <div class="modal-toolbar"><div id="emojiPickerContainer" style="position: relative; display: inline-block;"><button id="emojiPickerBtn" title="Add Emoji">😊</button><div id="emojiPicker" class="emoji-picker"></div></div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;"><div style="font-size:13px; color:#666;">Selected date: <span id="modalDateLabel"></span></div><div class="row"><button id="btnCancelEntry" class="btn-cancel">Cancel</button><button id="btnSave" class="btn-save">Save</button></div></div>
+    </div>
+  </div>
+
+  <div id="passwordModalBackdrop" class="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <h3>Change Password</h3>
+      <p style="font-size:13px; color: #666;"><b>Security Note:</b> Passwords are stored locally in the browser and are not truly secure.</p>
+      <input type="password" id="currentPassword" placeholder="Current Password" /><input type="password" id="newPassword" placeholder="New Password" /><input type="password" id="confirmNewPassword" placeholder="Confirm New Password" />
+      <div class="row"><button id="btnCancelPassword" class="btn-cancel">Cancel</button><button id="btnSavePassword" class="btn-save">Save Password</button></div>
+    </div>
+  </div>
+  
+  <div class="calendar-box" id="calendarBox" aria-hidden="false">
+    <div class="cal-top"><div class="month" id="calMonthLabel">Month</div><div class="cal-nav"><button id="prevMonth" title="Previous Month">&lt;</button><button id="nextMonth" title="Next Month">&gt;</button></div></div>
+    <table class="cal-grid" id="calendarGrid" aria-hidden="false"></table>
+  </div>
 
 <script>
-    function toggleEntryForm() {
-        const form = document.getElementById("entryForm");
-        form.style.display = form.style.display === "none" || form.style.display === "" ? "block" : "none";
+/* ----------------------
+  Data Models & Storage
+  ---------------------- */
+const ENTRIES_KEY = 'my_journal_entries_v6';
+const USER_SETTINGS_KEY = 'my_journal_user_settings_v1';
+
+const defaultSettings = {
+    username: 'Journal User',
+    password: 'password123',
+    profilePicUrl: `https://i.pravatar.cc/150?u=${Date.now()}`,
+    themeColors: {
+        dark: { 'bg-dark': '#0f172a', 'header-dark': '#1e293b', 'entry-dark': '#172033', 'sidebar-dark': '#0b1320' },
+        light: { 'light-bg': '#B9D1EA', 'light-header': '#96B5CE', 'light-entry': '#ffffff', 'light-sidebar': '#eef2f9' }
     }
+};
 
-    function toggleDarkMode() {
-        document.body.classList.toggle("dark");
+let entries = JSON.parse(localStorage.getItem(ENTRIES_KEY) || '[]');
+let userSettings = JSON.parse(localStorage.getItem(USER_SETTINGS_KEY)) || {};
+userSettings = {
+    ...defaultSettings,
+    ...userSettings,
+    themeColors: {
+        dark: { ...defaultSettings.themeColors.dark, ...(userSettings.themeColors?.dark || {}) },
+        light: { ...defaultSettings.themeColors.light, ...(userSettings.themeColors?.light || {}) }
     }
+};
 
-    function saveEntry() {
-        const title = document.getElementById("entryTitle").value.trim();
-        const text = document.getElementById("entryText").value.trim();
-        const mood = document.getElementById("entryMood").value;
+function persistEntries() { localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries)); }
+function persistUserSettings() { localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(userSettings)); }
 
-        if (!title || !text) {
-            alert("Please fill in both title and text.");
-            return;
-        }
+/* ----------------------
+  Utilities
+  ---------------------- */
+function formatDisplayDate(ymd) { const d = new Date(ymd + 'T00:00:00'); return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });}
+function nowYMD() { return new Date().toISOString().split('T')[0]; }
+function formatTimeFromISO(iso) { const d = new Date(iso); let h = d.getHours(); const m = String(d.getMinutes()).padStart(2,'0'); const a = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${h}:${m} ${a}`; }
+function sanitizeHTML(html) { const t = document.createElement('div'); t.innerHTML = html; t.querySelectorAll('script, style').forEach(el => el.remove()); t.querySelectorAll('*').forEach(el => { for (const attr of el.attributes) { if (attr.name.startsWith('on')) el.removeAttribute(attr.name); } }); return t.innerHTML; }
 
-        const entries = JSON.parse(localStorage.getItem("journalEntries")) || [];
-        entries.unshift({ title, text, mood });
-        localStorage.setItem("journalEntries", JSON.stringify(entries));
-
-        document.getElementById("entryTitle").value = "";
-        document.getElementById("entryText").value = "";
-        document.getElementById("entryMood").value = "happy";
-
-        toggleEntryForm();
-        displayEntries();
+/* ----------------------
+  Theme, Sidebar & User Settings
+  ---------------------- */
+function applyCustomTheme() {
+    for (const [key, value] of Object.entries(userSettings.themeColors.dark)) { document.documentElement.style.setProperty(`--${key}`, value); }
+    for (const [key, value] of Object.entries(userSettings.themeColors.light)) { document.documentElement.style.setProperty(`--${key}`, value); }
+}
+function loadThemeCustomizerInputs() {
+    document.querySelectorAll('#themeCustomizer input[type="color"]').forEach(input => {
+        const theme = input.dataset.theme;
+        const cssVar = input.dataset.var;
+        input.value = userSettings.themeColors[theme][cssVar];
+    });
+}
+document.getElementById('themeCustomizer').addEventListener('input', (e) => {
+    if (e.target.type === 'color') {
+        const theme = e.target.dataset.theme;
+        const cssVar = e.target.dataset.var;
+        userSettings.themeColors[theme][cssVar] = e.target.value;
+        applyCustomTheme();
+        persistUserSettings();
     }
-
-    function displayEntries(filterMood = "all") {
-        const entries = JSON.parse(localStorage.getItem("journalEntries")) || [];
-        const list = document.getElementById("entriesList");
-        list.innerHTML = "";
-
-        entries
-            .filter(entry => filterMood === "all" || entry.mood === filterMood)
-            .forEach(entry => {
-                const div = document.createElement("div");
-                div.className = `entry ${entry.mood}`;
-                const emoji = entry.mood === "happy" ? "😊" : entry.mood === "neutral" ? "😐" : "😢";
-                div.innerHTML = `<h3>${entry.title}</h3><p>${entry.text}</p><p>${emoji}</p>`;
-                list.appendChild(div);
-            });
+});
+document.getElementById('resetThemeBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset all colors to their defaults?')) {
+        userSettings.themeColors = defaultSettings.themeColors;
+        persistUserSettings();
+        applyCustomTheme();
+        loadThemeCustomizerInputs();
     }
+});
+function loadUserSettings() {
+    document.getElementById('profilePic').src = userSettings.profilePicUrl;
+    document.getElementById('profilePic').onerror = () => { document.getElementById('profilePic').src = `https://i.pravatar.cc/150?u=error`; };
+    document.getElementById('usernameDisplay').textContent = userSettings.username;
+}
+document.getElementById('menuToggleBtn').addEventListener('click', (e) => { e.stopPropagation(); document.body.classList.toggle('sidebar-open'); });
+document.querySelector('.main-wrapper').addEventListener('click', () => { if (document.body.classList.contains('sidebar-open')) document.body.classList.remove('sidebar-open'); });
+document.getElementById('changeUsernameBtn').addEventListener('click', () => { const newName = prompt('Enter new username:', userSettings.username); if (newName && newName.trim() !== '') { userSettings.username = newName.trim(); persistUserSettings(); loadUserSettings(); } });
+document.getElementById('changePicBtn').addEventListener('click', () => { const newUrl = prompt('Enter new image URL:', userSettings.profilePicUrl); if (newUrl && newUrl.trim() !== '') { userSettings.profilePicUrl = newUrl.trim(); persistUserSettings(); loadUserSettings(); } });
+const passwordModal = document.getElementById('passwordModalBackdrop');
+document.getElementById('changePassBtn').addEventListener('click', () => { passwordModal.style.display = 'flex'; });
+document.getElementById('btnCancelPassword').addEventListener('click', () => { passwordModal.style.display = 'none'; });
+document.getElementById('btnSavePassword').addEventListener('click', () => { const cur = document.getElementById('currentPassword').value; const n1 = document.getElementById('newPassword').value; const n2 = document.getElementById('confirmNewPassword').value; if (cur !== userSettings.password) { alert('Incorrect current password.'); return; } if (!n1 || n1.length < 4) { alert('New password must be at least 4 characters long.'); return; } if (n1 !== n2) { alert('New passwords do not match.'); return; } userSettings.password = n1; persistUserSettings(); alert('Password changed successfully!'); document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmNewPassword').value = ''; passwordModal.style.display = 'none'; });
 
-    function filterEntries() {
-        const mood = document.getElementById("moodFilter").value;
-        displayEntries(mood);
-    }
+/* ----------------------
+  Calendar Logic
+  ---------------------- */
+const calMonthLabel = document.getElementById('calMonthLabel'); const calendarGrid = document.getElementById('calendarGrid'); let viewYear, viewMonth; let selectedDate = 'ALL_ENTRIES'; 
+function initCalendarView() { const d = new Date(); viewYear = d.getFullYear(); viewMonth = d.getMonth(); renderCalendar(); }
+function getActiveDatesSet() { return new Set(entries.map(e => e.date)); }
+function renderCalendar() { const first = new Date(viewYear, viewMonth, 1); calMonthLabel.textContent = `${first.toLocaleString(undefined, { month:'long' })} ${viewYear}`; calendarGrid.innerHTML = ''; const thead = document.createElement('thead'); const trHead = document.createElement('tr'); ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(w => { const th = document.createElement('th'); th.textContent = w; trHead.appendChild(th); }); thead.appendChild(trHead); calendarGrid.appendChild(thead); const tbody = document.createElement('tbody'); const firstWeekDay = first.getDay(); const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate(); const activeSet = getActiveDatesSet(); let date = 1; for (let r = 0; r < 6; r++) { const tr = document.createElement('tr'); for (let c = 0; c < 7; c++) { const td = document.createElement('td'); if (r === 0 && c < firstWeekDay || date > daysInMonth) { td.innerHTML = ''; } else { const span = document.createElement('span'); span.className = 'date-num'; span.textContent = date; td.appendChild(span); const ymd = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(date).padStart(2,'0')}`; td.dataset.ymd = ymd; if (ymd === nowYMD()) td.classList.add('today'); if (selectedDate !== 'ALL_ENTRIES' && ymd === selectedDate) td.classList.add('selected'); if (activeSet.has(ymd)) { const dot = document.createElement('b'); dot.className = 'dot'; dot.style.background = document.body.classList.contains('light-mode') ? 'var(--calendar-dot-light)' : 'var(--calendar-dot-dark)'; td.appendChild(dot); } td.addEventListener('click', () => { selectedDate = ymd; renderCalendar(); renderEntries(); document.getElementById('modalDateLabel').textContent = formatDisplayDate(selectedDate); }); date++; } tr.appendChild(td); } tbody.appendChild(tr); } calendarGrid.appendChild(tbody); }
 
-    // Load entries on page load
-    window.onload = () => displayEntries();
+/* ----------------------
+  Entries Rendering
+  ---------------------- */
+const entriesContainer = document.getElementById('entriesContainer');
+function renderEntries() {
+  entriesContainer.innerHTML = '';
+  const moodFilter = document.getElementById('filterMood').value;
+  const headerBar = document.createElement('div'); headerBar.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; max-width: 900px;'; const leftText = document.createElement('div'); leftText.style.fontSize = '14px'; leftText.style.color = document.body.classList.contains('light-mode') ? '#333' : 'rgba(255,255,255,0.7)'; leftText.textContent = `Showing: ${selectedDate === 'ALL_ENTRIES' ? 'All Entries' : formatDisplayDate(selectedDate)}`; headerBar.appendChild(leftText); const rightWrap = document.createElement('div'); rightWrap.style.cssText='display:flex; gap:8px;'; const btnAll = document.createElement('button'); btnAll.textContent = 'Show All'; btnAll.style.cssText = 'padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700;'; btnAll.onclick = () => { const pass = prompt("Enter password:"); if (pass === userSettings.password) { selectedDate = 'ALL_ENTRIES'; renderCalendar(); renderEntries(); } else if (pass !== null) { alert("Incorrect password."); } }; rightWrap.appendChild(btnAll); const btnToday = document.createElement('button'); btnToday.textContent = 'Today'; btnToday.style.cssText = 'padding:6px 10px; border-radius:8px; border:none; cursor:pointer; font-weight:700;'; btnToday.onclick = () => { selectedDate = nowYMD(); const dt = new Date(); viewYear = dt.getFullYear(); viewMonth = dt.getMonth(); renderCalendar(); renderEntries(); }; rightWrap.appendChild(btnToday); headerBar.appendChild(rightWrap); entriesContainer.appendChild(headerBar);
+  let listToShow = (selectedDate === 'ALL_ENTRIES' ? entries.slice() : entries.filter(e => e.date === selectedDate)).sort((a,b) => new Date(b.iso) - new Date(a.iso));
+  if (moodFilter !== 'all') { listToShow = listToShow.filter(e => e.mood.trim() === moodFilter.trim()); }
+  if (listToShow.length === 0) { const info = document.createElement('div'); info.style.color = document.body.classList.contains('light-mode') ? '#333' : 'rgba(255,255,255,0.55)'; info.textContent = 'No entries for this selection.'; entriesContainer.appendChild(info); return; }
+  listToShow.forEach((e) => { const el = document.createElement('div'); el.className = 'entry'; const title = document.createElement('h4'); title.textContent = e.title || '(No title)'; el.appendChild(title); if (e.imageUrl) { const img = document.createElement('img'); img.src = e.imageUrl; img.onerror = () => { img.style.display = 'none'; }; el.appendChild(img); } const para = document.createElement('p'); para.innerHTML = e.text; const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = `Last edited: ${formatDisplayDate(e.iso.split('T')[0])} – ${formatTimeFromISO(e.iso)} • ${e.mood}`; el.append(para, meta); el.addEventListener('click', (evt) => { if (evt.target.tagName !== 'A') { openEditModal(e.id); } }); entriesContainer.appendChild(el); });
+}
+
+/* ----------------------
+  Modal & Editor Logic
+  ---------------------- */
+const entryModal = document.getElementById('entryModalBackdrop'); const entryTitle = document.getElementById('entryTitle'); const entryImageURL = document.getElementById('entryImageURL'); const entryBody = document.getElementById('entryBody'); const entryMood = document.getElementById('entryMood'); const modalDateLabel = document.getElementById('modalDateLabel'); const modalTitle = document.getElementById('modalTitle'); let editingId = null;
+document.getElementById('openNew').addEventListener('click', openNewModal); document.getElementById('btnCancelEntry').addEventListener('click', closeEntryModal); document.getElementById('btnSave').addEventListener('click', saveFromModal);
+function openNewModal() { editingId = null; modalTitle.textContent = 'New Journal Entry'; entryTitle.value = ''; entryImageURL.value = ''; entryBody.innerHTML = ''; entryMood.value = '😊'; selectedDate = nowYMD(); modalDateLabel.textContent = formatDisplayDate(selectedDate); entryModal.style.display = 'flex'; entryBody.focus(); }
+function openEditModal(id) { const item = entries.find(x => x.id === id); if (!item) return; editingId = id; modalTitle.textContent = 'Edit Journal Entry'; entryTitle.value = item.title; entryImageURL.value = item.imageUrl || ''; entryBody.innerHTML = item.text; entryMood.value = item.mood || '😊'; selectedDate = item.date; modalDateLabel.textContent = formatDisplayDate(selectedDate); entryModal.style.display = 'flex'; renderCalendar(); renderEntries(); entryBody.focus(); }
+function closeEntryModal() { entryModal.style.display = 'none'; editingId = null; }
+function saveFromModal() { const title = entryTitle.value.trim(); const imageUrl = entryImageURL.value.trim(); const text = sanitizeHTML(entryBody.innerHTML.trim()); const mood = entryMood.value; if (!text && !imageUrl) { alert('Please write something or add an image link before saving.'); return; } const date = selectedDate || nowYMD(); const iso = new Date().toISOString(); if (editingId) { const idx = entries.findIndex(e => e.id === editingId); if (idx >= 0) { entries[idx] = { ...entries[idx], title, text, imageUrl, mood, iso }; } } else { entries.push({ id: 'id_' + Date.now(), title, text, imageUrl, mood, date, iso }); } persistEntries(); renderCalendar(); renderEntries(); closeEntryModal(); }
+document.getElementById('editorToolbar').addEventListener('click', (e) => { const cmd = e.target.closest('[data-command]')?.dataset.command; if (cmd && (cmd==='bold'||cmd==='italic')) document.execCommand(cmd, false, null); });
+document.getElementById('editorToolbar').addEventListener('change', (e) => { const cmd = e.target.closest('[data-command]')?.dataset.command; if (cmd && (cmd==='fontName'||cmd==='foreColor')) document.execCommand(cmd, false, e.target.value); });
+function insertEmojiIntoEditable(div, emoji) { div.focus(); const sel = window.getSelection(); if (sel.getRangeAt && sel.rangeCount) { const range = sel.getRangeAt(0); range.deleteContents(); const textNode = document.createTextNode(emoji); range.insertNode(textNode); range.setStartAfter(textNode); range.collapse(true); sel.removeAllRanges(); sel.addRange(range); } }
+const emojiPicker = document.getElementById('emojiPicker'); const emojiBtn = document.getElementById('emojiPickerBtn'); const emojis = [ '😊', '😄', '😂', '😍', '🤔', '😢', '😡', '👍', '👎', '❤️', '🎉', '💡', '🔥', '⭐', '✅', 'Musing...', 'Productive', 'Tired' ];
+emojis.forEach(emoji => { const span = document.createElement('span'); span.textContent = emoji; span.onclick = () => { insertEmojiIntoEditable(entryBody, emoji.trim()); emojiPicker.style.display = 'none'; }; emojiPicker.appendChild(span); });
+emojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiPicker.style.display = emojiPicker.style.display === 'flex' ? 'none' : 'flex'; });
+document.addEventListener('click', (e) => { if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) { emojiPicker.style.display = 'none'; } });
+
+/* ----------------------
+  Global Listeners & Initial Setup
+  ---------------------- */
+document.getElementById('toggleTheme').addEventListener('click', () => { document.body.classList.toggle('light-mode'); renderCalendar(); renderEntries(); });
+document.getElementById('prevMonth').addEventListener('click', () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCalendar(); });
+document.getElementById('nextMonth').addEventListener('click', () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCalendar(); });
+document.getElementById('filterMood').addEventListener('change', renderEntries);
+// Initial Load
+persistUserSettings();
+applyCustomTheme();
+loadThemeCustomizerInputs();
+loadUserSettings();
+initCalendarView();
+renderEntries();
 </script>
-
 </body>
 </html>
